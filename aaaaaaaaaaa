@@ -1,17 +1,14 @@
-SOURCE '/aws/ecs/eco3537-tqai.../container/xr'
-| fields @timestamp, @message
-| filter @message like /Apply filters Count API call successful/ 
-      or @message like /handleResponse method completed/
-| parse @message /(?:requestId|request ID)\s*[:=]\s*(?<reqId>[a-f0-9\-]{36})/
-| stats 
-    min(@timestamp) as StartTime, 
-    max(@timestamp) as EndTime, 
-    count(*) as msgCount
+fields @timestamp, @message
+| filter @message like /Apply filters Count API call successful|handleResponse method completed in/
+| parse @message /(request ?ID|requestId)\s*[:=]\s*(?<reqId>[a-f0-9\-]{36})/
+| stats
+    min(@timestamp) as start_ts,
+    max(@timestamp) as end_ts,
+    count() as msgCount
   by reqId
-| filter msgCount >= 2                         -- ensure we have both start & end
-| fields round((EndTime - StartTime)/1000, 3) as ProcessingTimeSeconds, EndTime
-| filter ProcessingTimeSeconds >= 0
-| stats 
-    max(ProcessingTimeSeconds) as ProcessingTimeSeconds
-  by bin(5m, EndTime), reqId                   -- one point per reqId at its time bin
-| sort bin(5m, EndTime) asc
+| filter msgCount >= 2 and end_ts > start_ts              -- only complete requests
+| eval proc_secs = (end_ts - start_ts) / 1000.0            -- per-request processing time
+| eval @timestamp = end_ts                                 -- put each request on the time axis at its end
+| stats max(proc_secs) as ProcessingTimeSeconds
+    by bin(1m), reqId                                      -- one point per request in its minute
+| sort bin(1m) asc
