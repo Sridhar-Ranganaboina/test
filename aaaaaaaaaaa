@@ -1,7 +1,2 @@
-| stats
-    count() as Requests,
-    avg(ProcessingTimeSeconds) as AvgProcSeconds,
-    pct(ProcessingTimeSeconds, 95) as P95ProcSeconds,
-    max(ProcessingTimeSeconds) as MaxProcSeconds
-  by bin(EndTime, 5m)
-| sort bin(EndTime, 5m) asc
+| stats count() as Requests by bin(EndTime, 5m)
+| display bin(EndTime, 5m), Requests
