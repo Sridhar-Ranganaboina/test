@@ -1,0 +1,17 @@
+SOURCE '/aws/ecs/eco3537-tqai.../container/xr'
+| fields @timestamp, @message
+| filter @message like /Apply filters Count API call successful/ 
+      or @message like /handleResponse method completed/
+| parse @message /(?:requestId|request ID)\s*[:=]\s*(?<reqId>[a-f0-9\-]{36})/
+| stats 
+    min(@timestamp) as StartTime, 
+    max(@timestamp) as EndTime, 
+    count(*) as msgCount
+  by reqId
+| filter msgCount >= 2                         -- ensure we have both start & end
+| fields round((EndTime - StartTime)/1000, 3) as ProcessingTimeSeconds, EndTime
+| filter ProcessingTimeSeconds >= 0
+| stats 
+    max(ProcessingTimeSeconds) as ProcessingTimeSeconds
+  by bin(5m, EndTime), reqId                   -- one point per reqId at its time bin
+| sort bin(5m, EndTime) asc
