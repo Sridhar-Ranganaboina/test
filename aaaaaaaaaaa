@@ -1,2 +1,1 @@
-| stats count() as Requests by bin(EndTime, 5m)
-| display bin(EndTime, 5m), Requests
+| stats max(ProcessingTimeSeconds) as ProcessingTimeSeconds by bin(30m), reqId
