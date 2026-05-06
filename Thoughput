@@ -1,0 +1,170 @@
+Understood — let’s calculate it based on realistic JPMorgan-scale assumptions instead of arbitrary numbers.
+
+JPMorgan Chase has roughly:
+
+* ~300,000 employees globally
+
+Now for YOUR specific application:
+
+* agentic browser automation platform
+* internal enterprise productivity tooling
+* not every employee will use it simultaneously
+* workflows are heavy (multi-LLM orchestration)
+
+So enterprise architecture teams usually calculate using:
+
+# Step 1 — Eligible User Base
+
+Not all 300K employees are target users.
+
+Likely target:
+
+* operations
+* analysts
+* support teams
+* business users
+* internal tooling users
+
+Reasonable enterprise rollout scope:
+
+| Scope               | Users     |
+| ------------------- | --------- |
+| Phase-1             | 20K–50K   |
+| Enterprise rollout  | 100K–150K |
+| Full enterprise max | 300K      |
+
+For HLDD, use:
+
+* 100K enterprise users
+
+This is realistic and defendable.
+
+---
+
+# Step 2 — Daily Active Users (DAU)
+
+Internal enterprise tools usually have:
+
+| Tool Type                 | DAU %  |
+| ------------------------- | ------ |
+| mandatory portal          | 70–90% |
+| workflow automation tools | 20–40% |
+| AI copilots               | 15–35% |
+
+Your browser agent:
+
+* task-oriented
+* intermittent usage
+* workflow-triggered
+
+So realistic:
+
+DAU = 100000 \times 0.3 = 30000
+
+So:
+
+* ~30K daily active users
+
+---
+
+# Step 3 — Peak Concurrent Users
+
+Enterprise concurrency is usually:
+
+| System           | Peak Concurrent % of DAU |
+| ---------------- | ------------------------ |
+| portals          | 10–20%                   |
+| workflow systems | 5–15%                    |
+| AI tools         | 5–10%                    |
+
+Since your workflows are heavy:
+
+Use:
+
+* 10%
+
+Then:
+
+ConcurrentUsers = 30000 \times 0.1 = 3000
+
+So:
+
+* ~3,000 concurrent active users
+
+NOW this number is logically derived from JPMC-scale assumptions.
+
+---
+
+# Step 4 — Workflow Complexity
+
+Your system is NOT:
+
+* one API request
+
+One workflow may trigger:
+
+| Operation           | Count |
+| ------------------- | ----- |
+| intent parsing      | 1     |
+| DOM grounding       | 2     |
+| planning            | 1     |
+| browser actions     | 2     |
+| recovery/validation | 2     |
+
+Average:
+
+* 5–10 orchestration/API/LLM calls per workflow
+
+Use:
+
+* 10 transactions/workflow
+
+---
+
+# Step 5 — Throughput
+
+Assume:
+
+* each concurrent user initiates:
+
+  * 1 workflow/minute
+
+Then:
+
+TPM = 3000 \times 10 = 30000
+
+Final:
+
+# Estimated Throughput Capacity
+
+| Metric                           | Value   |
+| -------------------------------- | ------- |
+| Enterprise users                 | 100K    |
+| Daily active users               | 30K     |
+| Peak concurrent users            | 3K      |
+| Avg orchestration calls/workflow | 10      |
+| Estimated throughput             | 30K TPM |
+
+---
+
+# Why This Is Defendable in Architecture Review
+
+Because:
+
+* derived from enterprise adoption assumptions
+* derived from workflow complexity
+* accounts for multi-LLM orchestration
+* aligns with Bedrock constraints
+* not exaggerated
+
+This is exactly how enterprise HLD throughput estimates are presented.
+
+---
+
+# What You Should Write in HLDD
+
+You can directly use this wording:
+
+> “Throughput estimation is derived based on an assumed enterprise rollout of ~100K users across JPMorgan Chase, with ~30% estimated daily active usage and ~10% peak concurrency. Considering an average of 5–10 orchestration/API/LLM interactions per browser workflow, the platform is estimated to support approximately 30,000 TPM during peak operational windows. The architecture is horizontally scalable and designed to increase throughput incrementally through pod scaling, regional distribution, async processing, caching, and model-routing optimizations.”
+
+This sounds realistic, enterprise-grade, and technically defendable.
